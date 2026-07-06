@@ -1,0 +1,103 @@
+diff --git a/node_modules/@react-native-voice/voice/android/build.gradle b/node_modules/@react-native-voice/voice/android/build.gradle
+index 8fce879..4144c6c 100644
+--- a/node_modules/@react-native-voice/voice/android/build.gradle
++++ b/node_modules/@react-native-voice/voice/android/build.gradle
+@@ -2,7 +2,7 @@ apply plugin: 'com.android.library'
+ 
+ repositories {
+     mavenLocal()
+-    jcenter()
++    mavenCentral()
+     maven {
+         // For developing the library outside the context of the example app, expect `react-native`
+         // to be installed at `./node_modules`.
+@@ -40,7 +40,7 @@ android {
+ buildscript {
+     if (project == rootProject) {
+         repositories {
+-            jcenter()
++            mavenCentral()
+         }
+         dependencies {
+             classpath 'com.android.tools.build:gradle:3.3.2'
+@@ -53,7 +53,7 @@ buildscript {
+ 
+ allprojects {
+     repositories {
+-        jcenter()
++        mavenCentral()
+     }
+ }
+ 
+diff --git a/node_modules/@react-native-voice/voice/android/src/main/java/com/wenkesj/voice/VoiceModule.java b/node_modules/@react-native-voice/voice/android/src/main/java/com/wenkesj/voice/VoiceModule.java
+index f22833e..dc321f2 100644
+--- a/node_modules/@react-native-voice/voice/android/src/main/java/com/wenkesj/voice/VoiceModule.java
++++ b/node_modules/@react-native-voice/voice/android/src/main/java/com/wenkesj/voice/VoiceModule.java
+@@ -319,11 +319,19 @@ public class VoiceModule extends ReactContextBaseJavaModule implements Recogniti
+ 
+   @Override
+   public void onPartialResults(Bundle results) {
++    if (results == null) {
++      return;
++    }
+     WritableArray arr = Arguments.createArray();
+ 
+     ArrayList<String> matches = results.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION);
++    if (matches == null) {
++      matches = new ArrayList<>();
++    }
+     for (String result : matches) {
+-      arr.pushString(result);
++      if (result != null) {
++        arr.pushString(result);
++      }
+     }
+ 
+     WritableMap event = Arguments.createMap();
+@@ -342,11 +350,19 @@ public class VoiceModule extends ReactContextBaseJavaModule implements Recogniti
+ 
+   @Override
+   public void onResults(Bundle results) {
++    if (results == null) {
++      return;
++    }
+     WritableArray arr = Arguments.createArray();
+ 
+     ArrayList<String> matches = results.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION);
++    if (matches == null) {
++      matches = new ArrayList<>();
++    }
+     for (String result : matches) {
+-      arr.pushString(result);
++      if (result != null) {
++        arr.pushString(result);
++      }
+     }
+ 
+     WritableMap event = Arguments.createMap();
+diff --git a/node_modules/@react-native-voice/voice/dist/index.js b/node_modules/@react-native-voice/voice/dist/index.js
+index a10af13..4ad31aa 100644
+--- a/node_modules/@react-native-voice/voice/dist/index.js
++++ b/node_modules/@react-native-voice/voice/dist/index.js
+@@ -5,7 +5,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
+ Object.defineProperty(exports, "__esModule", { value: true });
+ const react_native_1 = require("react-native");
+ const invariant_1 = __importDefault(require("invariant"));
+-const Voice = react_native_1.NativeModules.Voice;
++const Voice = react_native_1.NativeModules.Voice || react_native_1.NativeModules.RCTVoice;
+ // NativeEventEmitter is only availabe on React Native platforms, so this conditional is used to avoid import conflicts in the browser/server
+ const voiceEmitter = react_native_1.Platform.OS !== 'web' ? new react_native_1.NativeEventEmitter(Voice) : null;
+ class RCTVoice {
+diff --git a/node_modules/@react-native-voice/voice/src/index.ts b/node_modules/@react-native-voice/voice/src/index.ts
+index 8b51121..ebc29c9 100644
+--- a/node_modules/@react-native-voice/voice/src/index.ts
++++ b/node_modules/@react-native-voice/voice/src/index.ts
+@@ -11,7 +11,7 @@ import {
+   SpeechVolumeChangeEvent,
+ } from './VoiceModuleTypes';
+ 
+-const Voice = NativeModules.Voice as VoiceModule;
++const Voice = (NativeModules.Voice || NativeModules.RCTVoice) as VoiceModule;
+ 
+ // NativeEventEmitter is only availabe on React Native platforms, so this conditional is used to avoid import conflicts in the browser/server
+ const voiceEmitter =
